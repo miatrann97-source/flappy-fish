@@ -202,7 +202,7 @@
     var I18N = {
       vi: {
         tagline: 'Bé cá bơi né chai nhựa — giữ biển xanh sạch đẹp!',
-        howto: 'Chạm màn hình, nhấn Space hoặc click chuột để bé cá bơi ếch: quạt tay một vòng, đạp chân ếch rồi lướt đi thật êm. Né các cột chai nhựa và đừng chạm đáy biển nha!',
+        howto: 'Chạm màn hình, nhấn Space hoặc click chuột để bé cá quẫy đuôi bơi lên. Né các cột chai nhựa và đừng chạm đáy biển nha!',
         play: '▶ Bơi ngay!',
         again: '↻ Bơi lại',
         copy: '📋 Chép kết quả',
@@ -235,7 +235,7 @@
       },
       en: {
         tagline: 'Swim, dodge the plastic bottles — keep the ocean blue and clean!',
-        howto: 'Tap the screen, press Space or click to make the little fish do a soft breaststroke: sweep the arms, frog-kick, then glide. Dodge the bottle columns and don\'t touch the seabed!',
+        howto: 'Tap the screen, press Space or click to make the little fish flick its tail and swim up. Dodge the bottle columns and don\'t touch the seabed!',
         play: '▶ Swim now!',
         again: '↻ Swim again',
         copy: '📋 Copy result',
@@ -311,7 +311,7 @@
       o.start(); o.stop(a.currentTime + dur);
     }
     var sfx = {
-      flap: function () { blip(300, .28, 'sine', .09, 660); setTimeout(function () { blip(520, .2, 'sine', .05, 840); }, 90); },
+      flap: function () { blip(430, .16, 'sine', .11, 900); },
       score: function () { blip(880, .12, 'triangle', .12); setTimeout(function () { blip(1320, .16, 'triangle', .12); }, 70); },
       hit: function () { blip(220, .3, 'sawtooth', .10, 70); }
     };
@@ -376,13 +376,13 @@
     var fish, pipes, score, best = 0, speed, spawnX, frameT = 0, deadT = 0;
     var bubbles = [];
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var STROKE_DUR = 0.85; // one full breaststroke cycle: arm sweep + frog kick, glide, recovery
+    var FLAP_V = -505; // one strong tail flick sends the fish straight up
 
     function floorH() { return Math.max(44, H * 0.09); }
     function fishW() { return Math.max(86, Math.min(132, W * 0.24)); }
 
     function reset() {
-      fish = { x: W * 0.30, y: H * 0.44, vy: 0, angle: 0, strokeT: -1, kickSpawned: false };
+      fish = { x: W * 0.30, y: H * 0.44, vy: 0, angle: 0, flapT: 0 };
       pipes = [];
       score = 0;
       speed = Math.max(150, W * 0.42);
@@ -404,6 +404,7 @@
       if (!fish) reset();
       fish.x = W * 0.30;
       makeBubbles();
+      makeTrash();
     }
     window.addEventListener('resize', resize);
 
@@ -420,19 +421,17 @@
     }
 
     /* ================= Input ================= */
-    function beginStroke() {
-      // one breaststroke: arms sweep a circle first, then the frog kick;
-      // thrust eases in over the kick phase (applied in update) instead of
-      // the old instant flap jolt, then the fish glides
-      fish.strokeT = 0;
-      fish.kickSpawned = false;
+    function doFlap() {
+      // classic tail flick: instant upward velocity, no easing in
+      fish.vy = FLAP_V;
+      fish.flapT = 0.18;
       sfx.flap();
-      spawnArmWakes();
+      spawnTailSplash();
     }
     function flap() {
       if (state === 'ready') { startGame(); return; }
       if (state !== 'playing') return;
-      beginStroke();
+      doFlap();
     }
     function startGame() {
       reset();
@@ -440,12 +439,11 @@
       startPanel.hidden = true;
       overPanel.hidden = true;
       overPanel.dataset.shown = '';
-      beginStroke();
+      doFlap();
       startMusic();
     }
     function gameOver() {
       state = 'over';
-      fish.strokeT = -1;
       deadT = 0;
       sfx.hit();
       if (score > best) { best = score; recordBadge.innerHTML = '<span class="new-record">' + t('newRecord') + '</span>'; }
@@ -519,41 +517,22 @@
       rings.push({ x: x, y: y, r: 4, a: .55 });
       if (rings.length > 14) rings.shift();
     }
-    /* ---- breaststroke wake bubbles ---- */
+    /* ---- tail-flick splash bubbles ---- */
     var wakes = [];
     function spawnWake(x, y, vx, vy, r) {
       wakes.push({ x: x, y: y, vx: vx, vy: vy, r: r, a: .65, life: .8 });
       if (wakes.length > 42) wakes.shift();
     }
-    function spawnArmWakes() {
-      // arm sweep: two arcs of bubbles curling out to the sides and back
-      // from the front of the fish, like hands fanning the water around
+    function spawnTailSplash() {
+      // one tail beat: a burst of bubbles and a ring kicked out behind
       var w = fishW();
-      var n = reducedMotion ? 2 : 4;
-      for (var s = -1; s <= 1; s += 2) {
-        for (var i = 0; i < n; i++) {
-          spawnWake(fish.x + w * 0.30, fish.y + w * 0.10 + s * w * 0.05,
-            -50 - Math.random() * 60 - i * 12, s * (26 + i * 15),
-            1.8 + Math.random() * 2.6);
-        }
-      }
-    }
-    function spawnKickWakes() {
-      // frog kick: water blasted straight back from the feet, spreading
-      // out sideways as the legs snap together
-      var w = fishW();
-      var n = reducedMotion ? 3 : 7;
+      var n = reducedMotion ? 2 : 5;
       for (var i = 0; i < n; i++) {
-        spawnWake(fish.x - w * 0.36, fish.y + w * 0.14,
-          -150 - Math.random() * 100, (i - (n - 1) / 2) * 34 + (Math.random() * 14 - 7),
-          2 + Math.random() * 3.2);
+        spawnWake(fish.x - w * 0.34, fish.y + w * 0.12 + (Math.random() * 12 - 6),
+          -130 - Math.random() * 90, 50 + Math.random() * 70,
+          1.8 + Math.random() * 2.8);
       }
-      spawnRing(fish.x - w * 0.38, fish.y + w * 0.12);
-    }
-    function strokePhase() {
-      // 0..1 through the current stroke; falls back to a slow idle cycle
-      if (fish && fish.strokeT >= 0) return { p: Math.min(fish.strokeT / STROKE_DUR, 1), live: true };
-      return { p: (frameT % 1.7) / 1.7, live: false };
+      spawnRing(fish.x - w * 0.32, fish.y + w * 0.12);
     }
 
     /* ================= Obstacles: plastic bottle columns ================= */
@@ -700,6 +679,110 @@
       p.colW = colW;
     }
 
+    /* ================= Background trash (decoration only — never collides) ================= */
+    var trash = [];
+    function newTrash(x) {
+      return {
+        x: x,
+        y: H * (0.10 + Math.random() * 0.70),
+        s: 20 + Math.random() * 26,
+        type: Math.floor(Math.random() * 4), // 0 bottle, 1 plastic bag, 2 can, 3 soggy box
+        rot: (Math.random() - 0.5) * 1.4,
+        bob: Math.random() * Math.PI * 2,
+        drift: 5 + Math.random() * 13,
+        seed: Math.random() * 1000
+      };
+    }
+    function makeTrash() {
+      trash = [];
+      var n = reducedMotion ? 5 : Math.max(8, Math.min(14, Math.round(W / 95)));
+      for (var i = 0; i < n; i++) trash.push(newTrash(Math.random() * (W + 60)));
+    }
+    function drawTrashItem(it) {
+      var s = it.s;
+      ctx.save();
+      ctx.translate(it.x, it.y + Math.sin(frameT * 0.9 + it.bob) * 5);
+      ctx.rotate(it.rot + Math.sin(frameT * 0.55 + it.bob) * 0.09);
+      ctx.globalAlpha = 0.8;
+      if (it.type === 0) {
+        // stray plastic bottle lying on its side
+        ctx.rotate(1.15);
+        drawBottle(0, -s * 0.85, s * 0.55, s * 1.7, false, it.seed);
+      } else if (it.type === 1) {
+        // crumpled plastic bag with two little handles
+        ctx.fillStyle = 'rgba(233,240,243,0.72)';
+        ctx.strokeStyle = 'rgba(150,175,190,0.85)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.30, -s * 0.18);
+        ctx.quadraticCurveTo(-s * 0.52, s * 0.28, -s * 0.18, s * 0.46);
+        ctx.quadraticCurveTo(0, s * 0.56, s * 0.22, s * 0.44);
+        ctx.quadraticCurveTo(s * 0.52, s * 0.22, s * 0.30, -s * 0.18);
+        ctx.quadraticCurveTo(0, -s * 0.34, -s * 0.30, -s * 0.18);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.26, -s * 0.20);
+        ctx.quadraticCurveTo(-s * 0.30, -s * 0.52, -s * 0.10, -s * 0.30);
+        ctx.moveTo(s * 0.26, -s * 0.20);
+        ctx.quadraticCurveTo(s * 0.30, -s * 0.52, s * 0.10, -s * 0.30);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(150,175,190,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.24, s * 0.05);
+        ctx.quadraticCurveTo(0, s * 0.16, s * 0.24, s * 0.02);
+        ctx.moveTo(-s * 0.16, s * 0.26);
+        ctx.quadraticCurveTo(0, s * 0.34, s * 0.18, s * 0.24);
+        ctx.stroke();
+      } else if (it.type === 2) {
+        // dented drinks can
+        var cw = s * 0.95, ch = s * 1.15;
+        var cg = ctx.createLinearGradient(-cw / 2, 0, cw / 2, 0);
+        cg.addColorStop(0, '#9aa4ab');
+        cg.addColorStop(0.45, '#d7dde1');
+        cg.addColorStop(1, '#878f96');
+        ctx.fillStyle = cg;
+        roundRect(-cw / 2, -ch / 2, cw, ch, 4); ctx.fill();
+        ctx.fillStyle = '#e05252';
+        ctx.fillRect(-cw / 2, -ch * 0.14, cw, ch * 0.30);
+        ctx.strokeStyle = 'rgba(70,80,88,0.7)'; ctx.lineWidth = 1.4;
+        roundRect(-cw / 2, -ch / 2, cw, ch, 4); ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(0, -ch / 2 + 2, cw * 0.36, 3.4, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#c3ccd1'; ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-cw * 0.2, ch * 0.28);
+        ctx.lineTo(cw * 0.05, ch * 0.36);
+        ctx.lineTo(-cw * 0.05, ch * 0.44);
+        ctx.stroke();
+      } else {
+        // soggy cardboard box
+        var bw2 = s * 1.25, bh2 = s * 0.95;
+        ctx.fillStyle = '#a3805c';
+        roundRect(-bw2 / 2, -bh2 / 2, bw2, bh2, 3); ctx.fill();
+        ctx.fillStyle = 'rgba(70,50,30,0.28)';
+        ctx.fillRect(-bw2 / 2, bh2 * 0.12, bw2, bh2 * 0.38);
+        ctx.strokeStyle = 'rgba(90,66,40,0.85)'; ctx.lineWidth = 1.5;
+        roundRect(-bw2 / 2, -bh2 / 2, bw2, bh2, 3); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, -bh2 / 2); ctx.lineTo(0, bh2 / 2);
+        ctx.moveTo(-bw2 / 2, 0); ctx.lineTo(bw2 / 2, 0);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(230,220,200,0.65)'; ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-bw2 * 0.32, -bh2 / 2 + 1); ctx.lineTo(-bw2 * 0.32, bh2 / 2 - 1);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    function drawTrash(dt) {
+      for (var i = 0; i < trash.length; i++) {
+        var it = trash[i];
+        it.x -= (speedNow() * 0.30 + it.drift) * dt;
+        if (it.x < -70) trash[i] = newTrash(W + 60);
+        drawTrashItem(trash[i]);
+      }
+    }
+
     /* ================= Background ================= */
     function drawBackground(dt) {
       var g = ctx.createLinearGradient(0, 0, 0, H);
@@ -752,6 +835,8 @@
       ctx.moveTo(0, base + 6);
       for (var x = 0; x <= W; x += 40) ctx.lineTo(x, base + 4 + Math.sin(x * 0.02 + 2) * 3);
       ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+      // drifting trash floating behind everything playable
+      drawTrash(dt);
       // foreground seaweed tufts on the sand
       ctx.strokeStyle = '#2e9e6b'; ctx.lineWidth = 4; ctx.lineCap = 'round';
       for (var k = 0; k < 6; k++) {
@@ -786,29 +871,13 @@
         ctx.strokeStyle = 'rgba(255,255,255,' + wk.a + ')';
         ctx.lineWidth = 1; ctx.stroke();
       }
-      // breaststroke body language on the unchanged fish art: the body
-      // stretches long on the frog kick, tucks a little on recovery, and
-      // a soft wave runs through it across the whole stroke cycle
-      var sp = strokePhase();
-      var amp = reducedMotion ? 0.45 : 1;
-      var sx = 1, sy = 1, wave = 0;
-      if (sp.live) {
-        if (sp.p < 0.38) {
-          var kp = Math.sin(Math.PI * (sp.p / 0.38));
-          sx = 1 + 0.15 * kp * amp; sy = 1 - 0.09 * kp * amp;
-        } else if (sp.p > 0.62) {
-          var rp = Math.sin(Math.PI * ((sp.p - 0.62) / 0.38));
-          sx = 1 - 0.06 * rp * amp; sy = 1 + 0.045 * rp * amp;
-        }
-        wave = Math.sin(sp.p * Math.PI * 2 - 0.7) * 0.085 * amp;
-      } else if (state === 'ready') {
-        var ip = Math.sin(sp.p * Math.PI);
-        sx = 1 + 0.05 * ip * amp; sy = 1 - 0.03 * ip * amp;
-        wave = Math.sin(sp.p * Math.PI * 2) * 0.045 * amp;
-      }
+      // quick squash-and-stretch snap on each tail flick, then it settles
+      var pulse = 0;
+      if (fish.flapT > 0 && !reducedMotion) pulse = Math.sin(Math.PI * (fish.flapT / 0.18));
+      var sx = 1 + 0.07 * pulse, sy = 1 - 0.05 * pulse;
       ctx.save();
       ctx.translate(fish.x, fish.y);
-      ctx.rotate(fish.angle + wave);
+      ctx.rotate(fish.angle);
       ctx.scale(sx, sy);
       if (fishImg.complete && fishImg.naturalWidth) {
         ctx.drawImage(fishImg, -w / 2, -h / 2, w, h);
@@ -860,11 +929,10 @@
       }
 
       if (state === 'ready') {
-        // slow idle breaststroke: little kick, long glide, soft bob
-        var ip2 = (frameT % 1.7) / 1.7;
-        fish.y = H * 0.44 + Math.sin(ip2 * Math.PI * 2 - 0.8) * 8 - Math.sin(Math.PI * Math.min(ip2 / 0.38, 1)) * 3;
-        fish.angle = Math.sin(ip2 * Math.PI * 2 + 0.5) * 0.05;
-        fish.x = W * 0.30 + Math.sin(Math.PI * Math.min(ip2 / 0.38, 1)) * 5;
+        // gentle idle bob while waiting to start
+        fish.y = H * 0.44 + Math.sin(frameT * 2.2) * 9;
+        fish.angle = Math.sin(frameT * 2.2 + 0.6) * 0.06;
+        fish.x = W * 0.30;
         return;
       }
       if (state === 'over') {
@@ -879,34 +947,13 @@
         }
         return;
       }
-      // playing — breaststroke physics: the frog kick's thrust swells and
-      // fades over the first part of the stroke, then the fish streamlines
-      // and glides (lighter gravity + water drag) before sinking softly
-      var grav = 1230;
-      if (fish.strokeT >= 0) {
-        fish.strokeT += dt;
-        var sp2 = fish.strokeT / STROKE_DUR;
-        if (sp2 >= 1) { fish.strokeT = -1; }
-        else if (sp2 < 0.38) {
-          fish.vy -= 4700 * Math.sin(Math.PI * (sp2 / 0.38)) * dt;
-          if (!fish.kickSpawned && sp2 > 0.10) { fish.kickSpawned = true; spawnKickWakes(); }
-        } else {
-          grav *= 0.82;
-        }
-      }
-      fish.vy = Math.min(fish.vy + grav * dt, 470);
-      if (fish.vy < -540) fish.vy = -540;
-      if (fish.vy > 0) fish.vy *= (1 - 0.22 * dt);
+      // playing — classic flap physics: full gravity, snappy tilt
+      if (fish.flapT > 0) fish.flapT -= dt;
+      fish.vy = Math.min(fish.vy + 1380 * dt, 540);
       fish.y += fish.vy * dt;
-      // gentle surge forward on each kick, easing back through the glide
-      var surge = 0;
-      if (fish.strokeT >= 0) {
-        var sp3 = fish.strokeT / STROKE_DUR;
-        surge = Math.sin(Math.PI * Math.min(sp3 * 1.12, 1)) * 11;
-      }
-      fish.x = W * 0.30 + surge;
-      var target = Math.max(-0.20, Math.min(0.42, fish.vy / 950));
-      fish.angle += (target - fish.angle) * Math.min(1, dt * 6);
+      fish.x = W * 0.30;
+      var target = Math.max(-0.25, Math.min(1.15, fish.vy / 640));
+      fish.angle += (target - fish.angle) * Math.min(1, dt * (fish.vy < 0 ? 14 : 7));
 
       // pipes
       var lastX = pipes.length ? pipes[pipes.length - 1].x : -Infinity;
