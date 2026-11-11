@@ -316,6 +316,60 @@
       hit: function () { blip(220, .3, 'sawtooth', .10, 70); }
     };
 
+    /* ================= Background music (cheerful chiptune loop) ================= */
+    var MUSIC = {
+      tempo: 138,
+      // 32 eighth-note steps (4 bars), midi notes, 0 = rest
+      lead: [72, 76, 79, 76, 81, 79, 76, 74, 72, 76, 79, 76, 84, 79, 76, 74,
+             72, 76, 79, 76, 81, 79, 76, 79, 81, 84, 81, 79, 76, 74, 72, 0],
+      bassRoots: [48, 53, 55, 48], // C – F – G – C, one chord per bar
+      timer: null, step: 0, nextTime: 0, started: false
+    };
+    function midiHz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+    function musicNote(freq, time, dur, type, vol) {
+      var a = audioCtx; if (!a) return;
+      var o = a.createOscillator(), g = a.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, time);
+      g.gain.setValueAtTime(0.0001, time);
+      g.gain.exponentialRampToValueAtTime(vol, time + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(time); o.stop(time + dur + 0.02);
+    }
+    function scheduleStep(step, time) {
+      var stepDur = 60 / MUSIC.tempo / 2;
+      var leadNote = MUSIC.lead[step % MUSIC.lead.length];
+      if (leadNote) musicNote(midiHz(leadNote), time, stepDur * 0.92, 'square', 0.038);
+      if (step % 2 === 0) {
+        var bar = Math.floor(step / 8) % 4;
+        var root = MUSIC.bassRoots[bar];
+        var bassNote = (step % 8 === 4) ? root + 7 : root; // root, then fifth mid-bar
+        musicNote(midiHz(bassNote), time, stepDur * 1.7, 'triangle', 0.075);
+      }
+      if (step % 2 === 1) musicNote(6200, time, 0.03, 'square', 0.008); // tiny hat tick
+    }
+    function musicScheduler() {
+      if (!audioCtx) return;
+      var stepDur = 60 / MUSIC.tempo / 2;
+      while (MUSIC.nextTime < audioCtx.currentTime + 0.22) {
+        scheduleStep(MUSIC.step, MUSIC.nextTime);
+        MUSIC.nextTime += stepDur;
+        MUSIC.step = (MUSIC.step + 1) % 64;
+      }
+    }
+    function startMusic() {
+      MUSIC.started = true;
+      if (!soundOn || MUSIC.timer) return;
+      var a = ac(); if (!a) return;
+      MUSIC.step = 0;
+      MUSIC.nextTime = a.currentTime + 0.08;
+      MUSIC.timer = setInterval(musicScheduler, 80);
+    }
+    function stopMusic() {
+      if (MUSIC.timer) { clearInterval(MUSIC.timer); MUSIC.timer = null; }
+    }
+
     /* ================= Game state ================= */
     var W = 0, H = 0, dpr = 1;
     var state = 'ready'; // ready | playing | over
@@ -380,6 +434,7 @@
       overPanel.dataset.shown = '';
       fish.vy = -Math.max(400, H * 0.62);
       sfx.flap();
+      startMusic();
     }
     function gameOver() {
       state = 'over';
@@ -431,7 +486,11 @@
     document.getElementById('soundBtn').addEventListener('click', function () {
       soundOn = !soundOn;
       this.textContent = soundOn ? '🔊' : '🔇';
-      if (soundOn) sfx.score();
+      if (!soundOn) { stopMusic(); }
+      else {
+        if (MUSIC.started) startMusic();
+        sfx.score();
+      }
     });
     document.getElementById('langBtn').addEventListener('click', function () {
       lang = (lang === 'vi') ? 'en' : 'vi';
