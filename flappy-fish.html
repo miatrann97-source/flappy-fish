@@ -377,6 +377,7 @@
     var bubbles = [];
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var FLAP_V = -434; // one tail flick sends the fish up — softened again so climbs feel slower and easier to time
+    var lastGapTop = null; // gap height of the previous column, so the next one can't leap too far away from it
 
     function floorH() { return Math.max(44, H * 0.09); }
     function fishW() { return Math.max(86, Math.min(132, W * 0.24)); }
@@ -384,6 +385,7 @@
     function reset() {
       fish = { x: W * 0.30, y: H * 0.44, vy: 0, angle: 0, flapT: 0 };
       pipes = [];
+      lastGapTop = null;
       score = 0;
       speed = Math.max(150, W * 0.42);
       spawnX = W + 120;
@@ -541,12 +543,26 @@
     }
     function spawnPipe() {
       var gap = gapSize();
-      // keep a generous safe zone below the surface so the gap never opens
-      // too high up — the fish never has to climb right to the top edge
-      var topMargin = Math.max(150, H * 0.22);
-      var bottomMargin = 60;
-      var maxTop = H - floorH() - gap - bottomMargin;
-      var topH = topMargin + Math.random() * Math.max(40, maxTop - topMargin);
+      var playH = H - floorH();
+      // Keep the gap inside a band around the middle of the play area:
+      // a real margin at BOTH ends, so it never opens right under the
+      // surface and never scrapes along the seabed either.
+      var topMargin = Math.max(120, H * 0.20);
+      var bottomMargin = Math.max(70, H * 0.12);
+      var midTop = (playH - gap) / 2; // gap top when the gap is dead centre
+      var halfBand = playH * 0.17;    // gap centre may wander ±17% of the play height
+      var lo = Math.max(topMargin, midTop - halfBand);
+      var hi = Math.min(playH - gap - bottomMargin, midTop + halfBand);
+      if (hi < lo) { lo = hi = midTop; } // very short screens: just centre it
+      var topH = lo + Math.random() * (hi - lo);
+      // ...and never let the gap leap too far from the previous column's gap,
+      // so the fish can always glide from one opening to the next in time
+      if (lastGapTop !== null) {
+        var maxJump = Math.max(90, playH * 0.22);
+        topH = Math.max(lastGapTop - maxJump, Math.min(lastGapTop + maxJump, topH));
+        topH = Math.max(lo, Math.min(hi, topH));
+      }
+      lastGapTop = topH;
       pipes.push({ x: spawnX, topH: topH, gap: gap, seed: Math.random() * 1000, passed: false });
     }
     // deterministic pseudo-random from seed
