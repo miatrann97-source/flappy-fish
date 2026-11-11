@@ -376,7 +376,7 @@
     var fish, pipes, score, best = 0, speed, spawnX, frameT = 0, deadT = 0;
     var bubbles = [];
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var FLAP_V = -505; // one strong tail flick sends the fish straight up
+    var FLAP_V = -468; // one tail flick sends the fish up — softened so climbs are easier to time
 
     function floorH() { return Math.max(44, H * 0.09); }
     function fishW() { return Math.max(86, Math.min(132, W * 0.24)); }
@@ -949,7 +949,7 @@
       }
       // playing — classic flap physics: full gravity, snappy tilt
       if (fish.flapT > 0) fish.flapT -= dt;
-      fish.vy = Math.min(fish.vy + 1380 * dt, 540);
+      fish.vy = Math.min(fish.vy + 1150 * dt, 465);
       fish.y += fish.vy * dt;
       fish.x = W * 0.30;
       var target = Math.max(-0.25, Math.min(1.15, fish.vy / 640));
