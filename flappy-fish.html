@@ -186,6 +186,23 @@
         color: rgba(255,255,255,.92); text-shadow: 0 1px 3px rgba(0,0,0,.35);
         pointer-events: none;
       }
+      .theme-chip, .shell-chip {
+        display: inline-block; background: var(--chip); color: var(--panel-ink);
+        border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: .85rem;
+        box-shadow: 0 3px 10px rgba(6,42,67,.22); margin-top: 3px;
+      }
+      .challenge-box {
+        margin: 12px 0 4px; background: rgba(255,190,60,.16); border-radius: 16px;
+        padding: 10px 14px; font-weight: 700; font-size: .98rem; line-height: 1.45; text-align: left;
+      }
+      .challenge-box .challenge-tag { display: block; font-weight: 800; color: #d98a06; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }
+      .challenge-box #challengeBest { display: block; opacity: .75; font-size: .9rem; }
+      .shop { margin-top: 12px; text-align: left; }
+      .shop-title { font-weight: 800; color: var(--teal); font-size: 1.05rem; margin-bottom: 6px; text-align: center; }
+      .shop-balance { text-align: center; font-weight: 700; margin-bottom: 8px; }
+      .shop-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(14,124,134,.08); border-radius: 12px; padding: 8px 12px; font-weight: 700; margin-bottom: 6px; }
+      .shop-row .ghost-btn { padding: 6px 14px; min-height: 2.2rem; font-size: .92rem; }
+      .run-loot { font-weight: 700; margin-top: 6px; color: var(--teal); }
     </style>
   </head>
   <body>
@@ -200,6 +217,7 @@
           <div class="score-num" id="scoreNum">0</div>
           <div class="score-label" id="scoreLabel">chai nhựa đã né</div>
           <div><span class="best-chip" id="bestChip">🏆 0</span></div>
+          <div><span class="theme-chip" id="themeChip">🍼 Chai nhựa</span> <span class="shell-chip" id="shellChip">🐚 0</span></div>
         </div>
         <div class="side right">
           <button class="chip-btn" id="soundBtn" type="button" aria-label="Âm thanh / Sound">🔊</button>
@@ -221,6 +239,13 @@
             <span data-i18n="howto">Chạm màn hình, nhấn Space hoặc click chuột để bé vẫy chân bay lên. Né các cột chai nhựa và đừng chạm đáy biển nha!</span>
           </div>
           <button class="big-btn" id="playBtn" type="button" data-i18n="play">▶ Bơi ngay!</button>
+          <div class="btn-row"><button class="ghost-btn" id="nightBtn" type="button">🌙 Chế độ đêm</button></div>
+          <div class="challenge-box" id="challengeBox"><span class="challenge-tag" data-i18n="challengeTag">🎯 Thử thách hôm nay</span><span id="challengeText"></span><span id="challengeStars"></span><span id="challengeBest"></span></div>
+          <div class="shop" id="shopBox">
+            <div class="shop-title" data-i18n="shopTitle">🐚 Cửa hàng vỏ sò</div>
+            <div class="shop-balance"><span data-i18n="shopBalance">Vỏ sò của bạn:</span> <b id="shopShells">0</b> 🐚 · <span id="shopStars">⭐ 0</span></div>
+            <div id="shopList"></div>
+          </div>
           <p class="fact"><span class="fact-tag" data-i18n="factTag">Bạn có biết?</span><span id="startFact"></span></p>
           <div class="champ" id="champBanner" hidden></div>
           <div class="board-wrap">
@@ -237,6 +262,7 @@
           <h2 class="over-title" data-i18n="overTitle">Ôi, đụng chai nhựa rồi!</h2>
           <div class="over-score" id="finalScore">0</div>
           <div class="over-score-label" data-i18n="overScoreLabel">chai nhựa đã né được</div>
+          <div class="run-loot" id="runLoot"></div>
           <div id="recordBadge"></div>
           <p class="fact"><span class="fact-tag" data-i18n="tipTag">Thông điệp xanh</span><span id="overFact"></span></p>
           <div class="name-row" id="nameRow" hidden>
@@ -287,6 +313,26 @@
         newChampion: '🎉 Bạn là nhà vô địch mới!',
         boardLoading: 'Đang tải bảng...',
         visitLine: '🐠 Đã có {n} người chơi',
+        challengeTag: '🎯 Thử thách hôm nay',
+        challengeDone: 'Xong rồi! ⭐',
+        challengeDoneToast: 'Thử thách xong! +1 ⭐',
+        challengeBest: 'Tiến độ hôm nay: {n}/{m}',
+        challengePipes: 'Né {n} chai nhựa trong 1 lần chơi',
+        challengeShells: 'Nhặt {n} vỏ sò trong 1 lần chơi',
+        challengeGold: 'Ăn {n} cá vàng trong 1 lần chơi',
+        challengeScore: 'Được {n} điểm trong 1 lần chơi',
+        shopTitle: '🐚 Cửa hàng vỏ sò',
+        shopBalance: 'Vỏ sò của bạn:',
+        nightOff: '🌙 Chế độ đêm',
+        nightOn: '☀️ Về ban ngày',
+        buySkin: 'Mua',
+        wearSkin: 'Mặc',
+        wearingSkin: 'Đang mặc ✓',
+        notEnoughShells: 'Chưa đủ vỏ sò, chơi thêm để gom nha! 🐚',
+        boughtSkin: 'Mua rồi! Bé cá mặc đồ mới nè 🎉',
+        goldMsg: '+3 🐟 Cá vàng!',
+        shellMsg: '+1 🐚 Vỏ sò!',
+        bubbleMsg: '🫧 Bong bóng oxy — bay chậm 4 giây!',
         shareText: '🐠 Flappy Fish: mình vừa giúp bé cá né được {n} chai nhựa! Cùng bé cá giữ biển sạch nha 🌊',
         facts: [
           'Mỗi năm có khoảng 11 triệu tấn rác nhựa đổ ra đại dương — tương đương một xe tải rác mỗi phút.',
@@ -360,6 +406,26 @@
         newChampion: '🎉 You are the new champion!',
         boardLoading: 'Loading board...',
         visitLine: '🐠 {n} players have played',
+        challengeTag: '🎯 Today\'s challenge',
+        challengeDone: 'Done! ⭐',
+        challengeDoneToast: 'Challenge done! +1 ⭐',
+        challengeBest: 'Today: {n}/{m}',
+        challengePipes: 'Dodge {n} bottles in one run',
+        challengeShells: 'Collect {n} shells in one run',
+        challengeGold: 'Eat {n} gold fish in one run',
+        challengeScore: 'Score {n} points in one run',
+        shopTitle: '🐚 Shell shop',
+        shopBalance: 'Your shells:',
+        nightOff: '🌙 Night mode',
+        nightOn: '☀️ Back to day',
+        buySkin: 'Buy',
+        wearSkin: 'Wear',
+        wearingSkin: 'Wearing ✓',
+        notEnoughShells: 'Not enough shells yet — play more to collect! 🐚',
+        boughtSkin: 'Bought! Your fish has a new outfit 🎉',
+        goldMsg: '+3 🐟 Gold fish!',
+        shellMsg: '+1 🐚 Shell!',
+        bubbleMsg: '🫧 Oxygen bubble — slow flight for 4s!',
         shareText: '🐠 Flappy Fish: I just helped the little fish dodge {n} plastic bottles! Let\'s keep the ocean clean 🌊',
         facts: [
           'About 11 million tonnes of plastic flow into the ocean every year — like a garbage truck dumping its load every minute.',
@@ -466,7 +532,9 @@
       score: function () { blip(880, .12, 'triangle', .12); setTimeout(function () { blip(1320, .16, 'triangle', .12); }, 70); },
       hit: function () { blip(220, .3, 'sawtooth', .10, 70); },
       shield: function () { blip(660, .12, 'sine', .12, 990); setTimeout(function () { blip(990, .18, 'sine', .12, 1320); }, 80); },
-      breakShield: function () { blip(520, .22, 'sawtooth', .10, 140); }
+      breakShield: function () { blip(520, .22, 'sawtooth', .10, 140); },
+      collect: function () { blip(990, .10, 'sine', .12, 1320); setTimeout(function () { blip(1320, .14, 'sine', .12, 1760); }, 60); },
+      bubble: function () { blip(520, .25, 'sine', .10, 880); }
     };
 
     /* ================= Background music (cheerful chiptune loop) ================= */
@@ -529,6 +597,195 @@
     var fish, pipes, score, best = 0, speed, spawnX, frameT = 0, deadT = 0;
     var shield = false, invulnT = 0;
     var bubbles = [];
+    /* ============ v2 PREVIEW: themes, collectibles, daily challenge,
+       night mode, shell shop ============ */
+    function lsInt(key, def) { try { var v = parseInt(localStorage.getItem(key), 10); return isNaN(v) ? def : v; } catch (e) { return def; } }
+    function lsSave(key, val) { try { localStorage.setItem(key, String(val)); } catch (e) {} }
+    function lsObj(key, def) { try { var raw = localStorage.getItem(key); var o = raw ? JSON.parse(raw) : null; return (o && typeof o === 'object') ? o : def; } catch (e) { return def; } }
+
+    /* ---- shells & stars (persisted) ---- */
+    var shells = lsInt('flappyFishShells', 0);
+    var stars = lsInt('flappyFishStars', 0);
+    function saveShells() { lsSave('flappyFishShells', shells); }
+    function saveStars() { lsSave('flappyFishStars', stars); }
+    function updateShellUI() {
+      var sc = document.getElementById('shellChip'); if (sc) sc.textContent = '🐚 ' + shells;
+      var sb = document.getElementById('shopShells'); if (sb) sb.textContent = shells;
+      var ss = document.getElementById('shopStars'); if (ss) ss.textContent = '⭐ ' + stars;
+    }
+
+    /* ---- 1. pipe themes: one theme per run, rotating ---- */
+    var PIPE_THEMES = [
+      { id: 'bottle', emoji: '🍼', vi: 'Chai nhựa', en: 'Plastic bottles' },
+      { id: 'seaweed', emoji: '🌿', vi: 'Rong biển', en: 'Seaweed' },
+      { id: 'coral', emoji: '🪸', vi: 'San hô', en: 'Coral' },
+      { id: 'color', emoji: '🌈', vi: 'Chai đủ màu', en: 'Colourful bottles' },
+      { id: 'foam', emoji: '🧽', vi: 'Bọt biển', en: 'Sea foam' }
+    ];
+    var runCount = lsInt('flappyFishRuns', 0);
+    var pipeTheme = PIPE_THEMES[runCount % PIPE_THEMES.length];
+    function themeName(th) { return th.emoji + ' ' + (lang === 'vi' ? th.vi : th.en); }
+    function updateThemeChip() {
+      var tc = document.getElementById('themeChip');
+      if (tc) tc.textContent = themeName(pipeTheme);
+    }
+
+    /* ---- 2. collectibles: gold fish (+3), shell (+1 shell), oxygen (slow 4s) ---- */
+    var slowT = 0, runShells = 0, runGold = 0, pipesPassed = 0;
+    function moveSpeed() { return slowT > 0 ? speed * 0.72 : speed; }
+    function collectItem(type) {
+      if (type === 'gold') {
+        score += 3; runGold++;
+        updateScoreUI(); sfx.collect(); showToast(t('goldMsg'));
+        spawnRing(fish.x, fish.y);
+      } else if (type === 'shell') {
+        shells++; runShells++; saveShells(); updateShellUI();
+        sfx.collect(); showToast(t('shellMsg'));
+        spawnRing(fish.x, fish.y);
+      } else if (type === 'oxygen') {
+        slowT = 4; sfx.bubble(); showToast(t('bubbleMsg'));
+        spawnRing(fish.x, fish.y);
+      }
+    }
+    function drawCollectible(x, y, type) {
+      var bob = Math.sin(frameT * 3 + x * 0.01) * 4;
+      ctx.save(); ctx.translate(x, y + bob);
+      if (type === 'gold') {
+        var wig = Math.sin(frameT * 6 + x * 0.02) * 0.12;
+        ctx.rotate(wig);
+        ctx.fillStyle = 'rgba(255,200,60,0.35)';
+        ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffb020';
+        ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(-24, -9); ctx.lineTo(-24, 9); ctx.closePath(); ctx.fill();
+        var gg = ctx.createLinearGradient(-14, -8, 14, 8);
+        gg.addColorStop(0, '#ffe08a'); gg.addColorStop(1, '#ff9d1e');
+        ctx.fillStyle = gg;
+        ctx.beginPath(); ctx.ellipse(0, 0, 15, 9, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#5b3a00';
+        ctx.beginPath(); ctx.arc(7, -2, 2.2, 0, Math.PI * 2); ctx.fill();
+      } else if (type === 'shell') {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '26px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('🐚', 0, 1);
+      } else { // oxygen bubble
+        ctx.fillStyle = 'rgba(180,230,255,0.30)';
+        ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.beginPath(); ctx.arc(-6, -7, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(6, 7, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    /* ---- 3. daily challenge (seeded by date) ---- */
+    function dateSeedStr(s) { var h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; } return h; }
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    var CHALLENGE_KINDS = ['pipes', 'shells', 'gold', 'score'];
+    function dailyChallenge(dateStr) {
+      var d = dateStr || todayStr();
+      var s = dateSeedStr(d);
+      var kind = CHALLENGE_KINDS[s % CHALLENGE_KINDS.length];
+      var targets = { pipes: [25, 30, 35, 40], shells: [3, 4, 5, 6], gold: [2, 3, 4, 5], score: [15, 20, 25, 30] };
+      var target = targets[kind][Math.floor(s / 7) % targets[kind].length];
+      return { date: d, kind: kind, target: target };
+    }
+    function challengeProg(c) {
+      if (c.kind === 'pipes') return pipesPassed;
+      if (c.kind === 'shells') return runShells;
+      if (c.kind === 'gold') return runGold;
+      return score;
+    }
+    function challengeText(c) {
+      var key = { pipes: 'challengePipes', shells: 'challengeShells', gold: 'challengeGold', score: 'challengeScore' }[c.kind];
+      return t(key).replace('{n}', c.target);
+    }
+    function challengeClaimed(c) { try { return localStorage.getItem('flappyFishChallenge:' + c.date) === '1'; } catch (e) { return false; } }
+    function renderChallenge() {
+      var c = dailyChallenge();
+      var ct = document.getElementById('challengeText');
+      if (ct) ct.textContent = challengeText(c) + (challengeClaimed(c) ? ' — ' + t('challengeDone') : '');
+      var cs = document.getElementById('challengeStars');
+      if (cs) cs.textContent = ' ⭐ ' + stars;
+      var best = lsObj('flappyFishDailyBest', null);
+      var bp = document.getElementById('challengeBest');
+      if (bp) {
+        if (best && best.date === c.date) bp.textContent = t('challengeBest').replace('{n}', best.best).replace('{m}', c.target);
+        else bp.textContent = '';
+      }
+    }
+    function checkDailyChallenge() {
+      var c = dailyChallenge();
+      var best = lsObj('flappyFishDailyBest', null);
+      var prog = challengeProg(c);
+      if (!best || best.date !== c.date) best = { date: c.date, kind: c.kind, best: 0 };
+      if (prog > best.best) { best.best = prog; try { localStorage.setItem('flappyFishDailyBest', JSON.stringify(best)); } catch (e) {} }
+      if (prog >= c.target && !challengeClaimed(c)) {
+        try { localStorage.setItem('flappyFishChallenge:' + c.date, '1'); } catch (e) {}
+        stars++; saveStars(); updateShellUI();
+        showToast(t('challengeDoneToast'));
+      }
+      renderChallenge();
+    }
+
+    /* ---- 4. night mode ---- */
+    var nightMode = false;
+    try { nightMode = localStorage.getItem('flappyFishNight') === '1'; } catch (e) {}
+    function setNight(on) {
+      nightMode = on;
+      try { localStorage.setItem('flappyFishNight', on ? '1' : '0'); } catch (e) {}
+      var b = document.getElementById('nightBtn');
+      if (b) b.textContent = on ? t('nightOn') : t('nightOff');
+    }
+
+    /* ---- 5. shell shop: skins, same silhouette, recolour + accessory ---- */
+    var SKINS = [
+      { id: 'default', price: 0, vi: 'Mặc định 🦈', en: 'Default 🦈', filter: '', hat: null, glow: false },
+      { id: 'winter', price: 30, vi: 'Mùa đông ❄️', en: 'Winter ❄️', filter: 'saturate(0.55) brightness(1.18)', hat: 'santa', glow: false },
+      { id: 'party', price: 60, vi: 'Tiệc tùng 🎉', en: 'Party 🎉', filter: 'hue-rotate(115deg) saturate(1.25)', hat: 'party', glow: false },
+      { id: 'glow', price: 100, vi: 'Phát sáng ✨', en: 'Deep-sea glow ✨', filter: 'hue-rotate(195deg) saturate(1.4) brightness(1.08)', hat: null, glow: true }
+    ];
+    function getSkin(id) { for (var i = 0; i < SKINS.length; i++) if (SKINS[i].id === id) return SKINS[i]; return SKINS[0]; }
+    var ownedSkins = lsObj('flappyFishSkins', ['default']);
+    if (ownedSkins.indexOf('default') < 0) ownedSkins.unshift('default');
+    var currentSkin = 'default';
+    try { var cs0 = localStorage.getItem('flappyFishSkin'); if (cs0 && getSkin(cs0)) currentSkin = cs0; } catch (e) {}
+    function saveSkins() { try { localStorage.setItem('flappyFishSkins', JSON.stringify(ownedSkins)); localStorage.setItem('flappyFishSkin', currentSkin); } catch (e) {} }
+    function selectSkin(id) {
+      currentSkin = id; saveSkins();
+      var hero = document.querySelector('.sharkgirl-hero');
+      if (hero) { var sk = getSkin(id); hero.style.filter = (sk && sk.filter) ? sk.filter : ''; }
+      renderShop();
+    }
+    function buySkin(id) {
+      var sk = getSkin(id);
+      if (ownedSkins.indexOf(id) >= 0) { selectSkin(id); return; }
+      if (shells < sk.price) { showToast(t('notEnoughShells')); return; }
+      shells -= sk.price; saveShells();
+      ownedSkins.push(id);
+      selectSkin(id);
+      updateShellUI(); sfx.collect();
+      showToast(t('boughtSkin'));
+    }
+    function renderShop() {
+      var list = document.getElementById('shopList');
+      if (!list) return;
+      var html = '';
+      for (var i = 0; i < SKINS.length; i++) {
+        var s = SKINS[i];
+        var owned = ownedSkins.indexOf(s.id) >= 0;
+        var wearing = currentSkin === s.id;
+        var btn = wearing ? '<button class="ghost-btn" disabled>' + t('wearingSkin') + '</button>'
+          : owned ? '<button class="ghost-btn" data-act="wear" data-skin="' + s.id + '">' + t('wearSkin') + '</button>'
+          : '<button class="ghost-btn" data-act="buy" data-skin="' + s.id + '">' + t('buySkin') + ' · ' + s.price + ' 🐚</button>';
+        html += '<div class="shop-row"><span class="shop-name">' + (lang === 'vi' ? s.vi : s.en) + '</span>' + btn + '</div>';
+      }
+      list.innerHTML = html;
+      updateShellUI();
+    }
+
     /* ================= Leaderboard (shared online board + local fallback) ================= */
     var BOARD_URL = 'https://flappy-fish-leaderboard-default-rtdb.firebaseio.com/board.json'; // Firebase Realtime Database — shared top-10 board
     /* ================= Visit counter (shared with the other 2 games) =================
@@ -643,6 +900,8 @@
       lastGapTop = null;
       score = 0;
       shield = false; invulnT = 0;
+      slowT = 0; runShells = 0; runGold = 0; pipesPassed = 0;
+      updateThemeChip(); updateShellUI();
       speed = Math.max(150, W * 0.42);
       spawnX = W + 120;
       updateScoreUI();
@@ -692,6 +951,9 @@
       doFlap();
     }
     function startGame() {
+      runCount++;
+      try { localStorage.setItem('flappyFishRuns', String(runCount)); } catch (e) {}
+      pipeTheme = PIPE_THEMES[runCount % PIPE_THEMES.length];
       reset();
       state = 'playing';
       startPanel.hidden = true;
@@ -733,6 +995,9 @@
       if (score > 0 && board.length && score > board[0].score) {
         recordBadge.innerHTML = '<span class="new-record">' + t('newChampion') + '</span>';
       }
+      checkDailyChallenge();
+      var rl = document.getElementById('runLoot');
+      if (rl) rl.textContent = (runShells || runGold) ? ('🐚 +' + runShells + '   🐟 +' + runGold) : '';
       renderBoards();
     }
 
@@ -793,6 +1058,13 @@
       document.documentElement.lang = lang;
       applyI18n();
     });
+    document.getElementById('nightBtn').addEventListener('click', function () { setNight(!nightMode); });
+    document.getElementById('shopList').addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('button[data-act]') : null;
+      if (!b) return;
+      var id = b.getAttribute('data-skin');
+      if (b.getAttribute('data-act') === 'buy') buySkin(id); else selectSkin(id);
+    });
     function applyI18n() {
       var nodes = document.querySelectorAll('[data-i18n]');
       for (var i = 0; i < nodes.length; i++) nodes[i].textContent = t(nodes[i].getAttribute('data-i18n'));
@@ -802,6 +1074,7 @@
       updateScoreUI();
       renderBoards();
       if (lastVisitCount !== null) { var vc = document.getElementById('visitCount'); if (vc) vc.textContent = t('visitLine').replace('{n}', lastVisitCount); }
+      renderChallenge(); renderShop(); updateThemeChip(); setNight(nightMode);
     }
 
     /* ================= Particles ================= */
@@ -856,12 +1129,19 @@
       lastGapTop = topH;
       var p = { x: spawnX, topH: topH, gap: gap, seed: Math.random() * 1000, passed: false, shield: null };
       if (Math.random() < 0.15) p.shield = { y: topH + gap / 2, taken: false };
+      // collectible floats inside the safe gap (never inside a pipe hitbox)
+      if (Math.random() < 0.38) {
+        var ctype = ['gold', 'shell', 'oxygen'][Math.floor(Math.random() * 3)];
+        var cy = topH + gap / 2 + (p.shield ? (Math.random() < 0.5 ? -1 : 1) * gap * 0.28 : (Math.random() - 0.5) * gap * 0.36);
+        cy = Math.max(topH + 26, Math.min(topH + gap - 26, cy));
+        p.collect = { type: ctype, y: cy, taken: false };
+      }
       pipes.push(p);
     }
     // deterministic pseudo-random from seed
     function rnd(seed) { var x = Math.sin(seed) * 43758.5453; return x - Math.floor(x); }
 
-    function drawBottle(x, y, w, h, flip, seed) {
+    function drawBottle(x, y, w, h, flip, seed, vivid) {
       // one plastic bottle, drawn pointing up (cap at top); caller rotates for hanging bottles
       ctx.save();
       ctx.translate(x, y);
@@ -885,9 +1165,17 @@
       ctx.quadraticCurveTo(bx + 6, by + bh - 7, bx + 6, by + bh);
       ctx.closePath();
       var grad = ctx.createLinearGradient(bx, 0, bx + bw, 0);
-      grad.addColorStop(0, 'rgba(168,216,238,0.92)');
-      grad.addColorStop(0.45, 'rgba(205,236,248,0.96)');
-      grad.addColorStop(1, 'rgba(140,196,226,0.92)');
+      if (vivid) {
+        var vividCols = [['#ff8fb8', '#ffd94d'], ['#b388ff', '#7ee0ff'], ['#ff9d5c', '#ff5da2'], ['#7ee0a3', '#ffe066']];
+        var vc = vividCols[Math.floor(rnd(seed + 3) * vividCols.length)];
+        grad.addColorStop(0, vc[0]);
+        grad.addColorStop(0.5, 'rgba(255,255,255,0.95)');
+        grad.addColorStop(1, vc[1]);
+      } else {
+        grad.addColorStop(0, 'rgba(168,216,238,0.92)');
+        grad.addColorStop(0.45, 'rgba(205,236,248,0.96)');
+        grad.addColorStop(1, 'rgba(140,196,226,0.92)');
+      }
       ctx.fillStyle = grad;
       ctx.fill();
       ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(38,96,128,0.55)'; ctx.stroke();
@@ -938,8 +1226,114 @@
       }
       ctx.restore();
     }
+
+    /* ---- themed pipe columns (same 74px hitbox, same gaps — looks only) ---- */
+    function drawLanterns(x, gapTop, gapBot, w) {
+      ctx.save();
+      for (var k = 0; k < 3; k++) {
+        var lx = x + 12 + k * (w - 24) / 2;
+        var tw = Math.sin(frameT * 2.4 + k * 1.7) * 0.25 + 0.75;
+        ctx.globalAlpha = 0.30 * tw;
+        ctx.fillStyle = '#ffd76a';
+        ctx.beginPath(); ctx.arc(lx, gapTop - 10, 11, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(lx, gapBot + 10, 11, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#ffe9a8';
+        ctx.beginPath(); ctx.arc(lx, gapTop - 10, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(lx, gapBot + 10, 4.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    function drawSeaweedColumn(x, y, h, seed, dir) {
+      // wavy blades anchored at one edge (dir +1: grow down from y; -1: grow up from y+h)
+      var cols = ['#2e9e6b', '#37c978', '#1f7a4d', '#4cc38a'];
+      for (var i = 0; i < 5; i++) {
+        var bx = x + 8 + i * 14 + (rnd(seed + i * 11) - 0.5) * 6;
+        var len = h * (0.55 + rnd(seed + i * 17) * 0.45);
+        var sway = Math.sin(frameT * 1.6 + seed + i) * 7;
+        var baseY = dir > 0 ? y : y + h;
+        var tipY = dir > 0 ? y + len : y + h - len;
+        ctx.strokeStyle = cols[i % cols.length];
+        ctx.lineWidth = 6 + rnd(seed + i * 23) * 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(bx, baseY);
+        ctx.quadraticCurveTo(bx + sway, baseY + (tipY - baseY) * 0.55, bx + sway * 1.4, tipY);
+        ctx.stroke();
+        ctx.fillStyle = cols[(i + 1) % cols.length];
+        ctx.beginPath(); ctx.ellipse(bx + sway * 1.4, tipY, 4.5, 7, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    function drawCoralColumn(x, y, h, seed) {
+      var cols = ['#ff8f7a', '#ff7a5c', '#ffa08a', '#ff6b9d'];
+      var clusters = Math.max(2, Math.floor(h / 110));
+      for (var c = 0; c < clusters; c++) {
+        var cy = y + (c + 0.5) * (h / clusters);
+        var cx = x + 37 + (c % 2 === 0 ? -14 : 14);
+        for (var b = 0; b < 4; b++) {
+          var ang = -Math.PI / 2 + (b - 1.5) * 0.5;
+          var len = 26 + rnd(seed + c * 31 + b * 7) * 16;
+          var tx = cx + Math.cos(ang) * len, ty = cy + Math.sin(ang) * len * 0.8;
+          ctx.strokeStyle = cols[(c + b) % cols.length];
+          ctx.lineWidth = 6; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(cx, cy);
+          ctx.quadraticCurveTo(cx + (tx - cx) * 0.5, cy + (ty - cy) * 0.7, tx, ty);
+          ctx.stroke();
+          ctx.fillStyle = cols[(c + b + 1) % cols.length];
+          ctx.beginPath(); ctx.arc(tx, ty, 5, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = cols[c % cols.length];
+        ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    function drawFoamColumn(x, y, h, seed) {
+      ctx.fillStyle = '#f2d98c';
+      ctx.fillRect(x, y, 74, h);
+      var rows = Math.ceil(h / 30);
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < 3; c++) {
+          var cx = x + 12 + c * 25 + (r % 2 === 0 ? 0 : 8) + (rnd(seed + r * 7 + c * 3) - 0.5) * 6;
+          var cy = y + 15 + r * 30;
+          ctx.fillStyle = (r + c) % 2 === 0 ? '#f7e8b0' : '#eed488';
+          ctx.beginPath(); ctx.arc(cx, cy, 13, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(160,120,60,0.5)';
+          ctx.beginPath(); ctx.arc(cx + 3, cy + 2, 3, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      for (var b = 0; b < 4; b++) {
+        ctx.beginPath(); ctx.arc(x + 14 + rnd(seed + b * 13) * 46, y + 12 + rnd(seed + b * 29) * Math.max(1, h - 24), 4 + rnd(seed + b * 41) * 3, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    function drawThemedPipe(p) {
+      var colW = 74;
+      var x = p.x, gapTop = p.topH, gapBot = p.topH + p.gap;
+      var botBase = H - floorH();
+      var th = pipeTheme.id;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x, -6, colW, gapTop + 6); ctx.clip();
+      if (th === 'seaweed') drawSeaweedColumn(x, 0, gapTop, p.seed, 1);
+      else if (th === 'coral') drawCoralColumn(x, 0, gapTop, p.seed);
+      else drawFoamColumn(x, 0, gapTop, p.seed);
+      ctx.restore();
+      drawNetBand(x, gapTop, colW, true);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x, gapBot, colW, botBase - gapBot + 6); ctx.clip();
+      if (th === 'seaweed') drawSeaweedColumn(x, gapBot, botBase - gapBot, p.seed + 100, -1);
+      else if (th === 'coral') drawCoralColumn(x, gapBot, botBase - gapBot, p.seed + 100);
+      else drawFoamColumn(x, gapBot, botBase - gapBot, p.seed + 100);
+      ctx.restore();
+      drawNetBand(x, gapBot, colW, false);
+      if (nightMode) drawLanterns(x, gapTop, gapBot, colW);
+      p.colW = colW;
+    }
     function drawPipe(p) {
       var colW = 74;
+      if (pipeTheme.id === 'seaweed' || pipeTheme.id === 'coral' || pipeTheme.id === 'foam') {
+        drawThemedPipe(p);
+        return;
+      }
+      var vivid = pipeTheme.id === 'color';
       var x = p.x, gapTop = p.topH, gapBot = p.topH + p.gap;
       var botBase = H - floorH();
       // top column: bottles hang cap-down from the surface
@@ -953,14 +1347,14 @@
         ctx.save();
         ctx.translate(x + colW / 2 + off, by + bh / 2);
         ctx.rotate((rnd(p.seed + i * 3) - 0.5) * 0.16 + Math.PI);
-        drawBottle(-0, -bh / 2, bw, bh, false, p.seed + i * 13);
+        drawBottle(-0, -bh / 2, bw, bh, false, p.seed + i * 13, vivid);
         ctx.restore();
         // second slimmer bottle peeking beside
         if (i % 2 === 0) {
           ctx.save();
           ctx.translate(x + colW / 2 - off * 1.4 + (off >= 0 ? -14 : 14), by + bh / 2);
           ctx.rotate((rnd(p.seed + i * 5) - 0.5) * 0.2 + Math.PI);
-          drawBottle(0, -bh / 2, bw * 0.8, bh * 0.9, false, p.seed + i * 29);
+          drawBottle(0, -bh / 2, bw * 0.8, bh * 0.9, false, p.seed + i * 29, vivid);
           ctx.restore();
         }
       }
@@ -976,18 +1370,19 @@
         ctx.save();
         ctx.translate(x + colW / 2 + off2, by2 + bh / 2);
         ctx.rotate((rnd(p.seed + j * 3) - 0.5) * 0.16);
-        drawBottle(0, -bh / 2, bw, bh, false, p.seed + 200 + j * 13);
+        drawBottle(0, -bh / 2, bw, bh, false, p.seed + 200 + j * 13, vivid);
         ctx.restore();
         if (j % 2 === 1) {
           ctx.save();
           ctx.translate(x + colW / 2 - off2 * 1.4 + (off2 >= 0 ? -14 : 14), by2 + bh / 2);
           ctx.rotate((rnd(p.seed + j * 5) - 0.5) * 0.2);
-          drawBottle(0, -bh / 2, bw * 0.8, bh * 0.9, false, p.seed + 300 + j * 29);
+          drawBottle(0, -bh / 2, bw * 0.8, bh * 0.9, false, p.seed + 300 + j * 29, vivid);
           ctx.restore();
         }
       }
       ctx.restore();
       drawNetBand(x, gapBot, colW, false);
+      if (nightMode) drawLanterns(x, gapTop, gapBot, colW);
       p.colW = colW;
     }
 
@@ -1170,14 +1565,20 @@
 
     function drawBackground(dt) {
       var g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0, '#3d9bc4');
-      g.addColorStop(0.55, '#1f6f9b');
-      g.addColorStop(1, '#0d4a6e');
+      if (nightMode) {
+        g.addColorStop(0, '#0b2740');
+        g.addColorStop(0.55, '#071a2e');
+        g.addColorStop(1, '#020d1a');
+      } else {
+        g.addColorStop(0, '#3d9bc4');
+        g.addColorStop(0.55, '#1f6f9b');
+        g.addColorStop(1, '#0d4a6e');
+      }
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
       // light rays
       ctx.save();
-      ctx.globalAlpha = 0.10;
+      ctx.globalAlpha = nightMode ? 0.04 : 0.10;
       ctx.fillStyle = '#dff6ff';
       for (var i = 0; i < 3; i++) {
         var rx = ((i * 0.37 + 0.12) * W) + Math.sin(frameT * 0.18 + i * 2) * 14;
@@ -1189,6 +1590,16 @@
         ctx.closePath(); ctx.fill();
       }
       ctx.restore();
+      if (nightMode) {
+        // twinkling stars near the surface
+        for (var si = 0; si < 26; si++) {
+          var starX = rnd(si * 37 + 5) * W, starY = rnd(si * 53 + 9) * H * 0.22;
+          ctx.globalAlpha = 0.35 + 0.45 * Math.abs(Math.sin(frameT * 1.8 + si));
+          ctx.fillStyle = '#dff2ff';
+          ctx.beginPath(); ctx.arc(starX, starY, 1.2 + rnd(si * 71) * 1.6, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
       // distant seaweed silhouettes (parallax)
       ctx.fillStyle = 'rgba(10,70,80,0.35)';
       var base = H - floorH();
@@ -1212,8 +1623,13 @@
       }
       // seabed
       var fg = ctx.createLinearGradient(0, base, 0, H);
-      fg.addColorStop(0, '#e8cf9a');
-      fg.addColorStop(1, '#c9a86a');
+      if (nightMode) {
+        fg.addColorStop(0, '#8a6f4d');
+        fg.addColorStop(1, '#5d4a33');
+      } else {
+        fg.addColorStop(0, '#e8cf9a');
+        fg.addColorStop(1, '#c9a86a');
+      }
       ctx.fillStyle = fg;
       ctx.beginPath();
       ctx.moveTo(0, base + 6);
@@ -1304,6 +1720,32 @@
     }
     /* ================= Fish ================= */
 
+    function drawSkinHat(w, h, skin) {
+      if (!skin || !skin.hat) return;
+      ctx.save();
+      ctx.translate(0.10 * w, -0.52 * h);
+      ctx.rotate(-0.15);
+      if (skin.hat === 'santa') {
+        ctx.fillStyle = '#e05252';
+        ctx.beginPath(); ctx.moveTo(-0.16 * w, 0);
+        ctx.quadraticCurveTo(-0.02 * w, -0.34 * h, 0.14 * w, -0.30 * h);
+        ctx.quadraticCurveTo(0.02 * w, -0.12 * h, 0.16 * w, 0);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        roundRect(-0.18 * w, -0.03 * h, 0.36 * w, 0.07 * h, 0.03 * h); ctx.fill();
+        ctx.beginPath(); ctx.arc(0.15 * w, -0.31 * h, 0.05 * w, 0, Math.PI * 2); ctx.fill();
+      } else { // party hat: striped cone + pompom
+        ctx.fillStyle = '#ff5da2';
+        ctx.beginPath(); ctx.moveTo(-0.15 * w, 0); ctx.lineTo(0, -0.36 * h); ctx.lineTo(0.15 * w, 0); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#ffd94d'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(-0.09 * w, -0.12 * h); ctx.lineTo(0.09 * w, -0.12 * h);
+        ctx.moveTo(-0.05 * w, -0.24 * h); ctx.lineTo(0.05 * w, -0.24 * h); ctx.stroke();
+        ctx.fillStyle = '#ffd94d';
+        ctx.beginPath(); ctx.arc(0, -0.37 * h, 0.045 * w, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
     function drawFish() {
       var w = fishW(), h = w * FISH_ASPECT;
       // wake bubbles trailing the stroke
@@ -1320,10 +1762,22 @@
       var pulse = 0;
       if (fish.flapT > 0 && !reducedMotion) pulse = Math.sin(Math.PI * (fish.flapT / 0.18));
       var sx = 1 + 0.07 * pulse, sy = 1 - 0.05 * pulse;
+      if (nightMode) {
+        // soft glow around bé cá at night
+        var nglow = ctx.createRadialGradient(fish.x, fish.y, 4, fish.x, fish.y, fishW() * 0.95);
+        nglow.addColorStop(0, 'rgba(140,220,255,0.35)');
+        nglow.addColorStop(1, 'rgba(140,220,255,0)');
+        ctx.fillStyle = nglow;
+        ctx.beginPath(); ctx.arc(fish.x, fish.y, fishW() * 0.95, 0, Math.PI * 2); ctx.fill();
+      }
       ctx.save();
       ctx.translate(fish.x, fish.y);
       ctx.rotate(fish.angle);
       ctx.scale(sx, sy);
+      var skin = getSkin(currentSkin);
+      var hadFilter = false;
+      if (skin && skin.filter) { try { ctx.filter = skin.filter; hadFilter = true; } catch (e) {} }
+      if (skin && skin.glow) { ctx.shadowColor = 'rgba(80,220,255,0.9)'; ctx.shadowBlur = 18; }
       if (girlImg.complete && girlImg.naturalWidth) {
         var gf = Math.floor(frameT * 12) % 24;
         var gc = gf % 6, gr = Math.floor(gf / 6);
@@ -1335,7 +1789,10 @@
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('🐠', 0, 0);
       }
+      if (hadFilter) { try { ctx.filter = 'none'; } catch (e) {} }
+      ctx.shadowBlur = 0;
       drawTailBag(w, h);
+      drawSkinHat(w, h, skin);
       /* Dive gear skipped for the shark-girl: her headphones stay, a
          diving mask would hide her cute face. */
       ctx.restore();
@@ -1344,6 +1801,14 @@
         ctx.translate(fish.x, fish.y);
         ctx.strokeStyle = 'rgba(255,217,77,0.9)'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(0, 0, fishW() * 0.62 + Math.sin(frameT * 5) * 3, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+      if (slowT > 0) {
+        // light-blue ring while the oxygen bubble slows the flight
+        ctx.save();
+        ctx.translate(fish.x, fish.y);
+        ctx.strokeStyle = 'rgba(120,200,255,0.85)'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(0, 0, fishW() * 0.72 + Math.sin(frameT * 6) * 3, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
       }
       // bubble rings from the stroke
@@ -1409,7 +1874,8 @@
       // playing — classic flap physics: full gravity, snappy tilt
       if (fish.flapT > 0) fish.flapT -= dt;
       if (invulnT > 0) invulnT -= dt;
-      fish.vy = Math.min(fish.vy + 990 * dt, 400);
+      if (slowT > 0) slowT -= dt;
+      fish.vy = Math.min(fish.vy + (slowT > 0 ? 480 : 990) * dt, slowT > 0 ? 240 : 400);
       fish.y += fish.vy * dt;
       fish.x = W * 0.30;
       var target = Math.max(-0.25, Math.min(1.15, fish.vy / 640));
@@ -1421,10 +1887,11 @@
       var r = fishW() * 0.30;
       for (var p = pipes.length - 1; p >= 0; p--) {
         var pipe = pipes[p];
-        pipe.x -= speed * dt;
+        pipe.x -= moveSpeed() * dt;
         if (!pipe.passed && pipe.x + 74 < fish.x - r) {
           pipe.passed = true;
           score++;
+          pipesPassed++;
           speed = Math.min(speed + 3.5, Math.max(300, W * 0.75));
           updateScoreUI();
           sfx.score();
@@ -1439,6 +1906,14 @@
             shield = true; updateScoreUI(); sfx.shield();
             showToast(t('shieldMsg'));
             spawnRing(pipe.x + 37, pipe.shield.y);
+          }
+        }
+        // collectibles float in the safe gap — never inside a pipe
+        if (pipe.collect && !pipe.collect.taken) {
+          var cdx = fish.x - (pipe.x + 37), cdy = fish.y - pipe.collect.y;
+          if (cdx * cdx + cdy * cdy < (r + 24) * (r + 24)) {
+            pipe.collect.taken = true;
+            collectItem(pipe.collect.type);
           }
         }
         // collision: circle vs two rects
@@ -1472,6 +1947,7 @@
       for (var j = 0; j < pipes.length; j++) {
         var pp = pipes[j];
         if (pp.shield && !pp.shield.taken) drawShieldStar(pp.x + 37, pp.shield.y);
+        if (pp.collect && !pp.collect.taken) drawCollectible(pp.x + 37, pp.collect.y, pp.collect.type);
       }
       drawFish();
       requestAnimationFrame(loop);
@@ -1485,6 +1961,8 @@
     loadBoard();
     trackVisit();
     loadVisitCount();
+    renderChallenge(); renderShop(); updateShellUI(); updateThemeChip(); setNight(nightMode);
+    selectSkin(currentSkin);
     requestAnimationFrame(loop);
     </script>
       <div class="dev-credit">© 2026 Mia &amp; Bom · All Rights Reserved</div>
